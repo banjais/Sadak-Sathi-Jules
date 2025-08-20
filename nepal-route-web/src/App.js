@@ -1,34 +1,41 @@
 import React from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import './style.css';
+import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import L from 'leaflet';
-import UserLocation from './UserLocation';
-import Search from './Search';
-import Routing from './Routing';
-
-// Fix for default marker icon issue with webpack
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
-  iconUrl: require('leaflet/dist/images/marker-icon.png'),
-  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
-});
-
+import 'leaflet-routing-machine';
 
 function App() {
-  const nepalCenter = [28.3949, 84.1240];
-  const zoomLevel = 7;
+  // Add routing after map is ready
+  const handleMapReady = (map) => {
+    if (!map._routingControl) {
+      const routingControl = L.Routing.control({
+        waypoints: [
+          L.latLng(27.7172, 85.3240), // Kathmandu
+          L.latLng(28.2096, 83.9856)  // Pokhara
+        ],
+        routeWhileDragging: true,
+      }).addTo(map);
+
+      map._routingControl = routingControl; // prevent duplicate routing
+    }
+  };
 
   return (
-    <MapContainer center={nepalCenter} zoom={zoomLevel} scrollWheelZoom={true}>
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <UserLocation />
-      <Search />
-      <Routing />
-    </MapContainer>
+    <div style={{ height: '100vh', width: '100%' }}>
+      <MapContainer
+        center={[28.3949, 84.1240]}
+        zoom={7}
+        style={{ height: '100%', width: '100%' }}
+        whenCreated={handleMapReady}
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution="&copy; OpenStreetMap contributors"
+        />
+      </MapContainer>
+    </div>
   );
 }
 
